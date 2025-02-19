@@ -1,7 +1,7 @@
 import HeroImage from '@/assets/hero-image-2.png';
 import { faAddressCard, faCheck } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 
 const getToday = (): string => {
@@ -13,7 +13,7 @@ const getToday = (): string => {
     });
 };
 
-const Index: React.FC = () => {
+const Index = () => {
     const navigate = useNavigate();
     const [today, setToday] = useState<string | undefined>(undefined);
 

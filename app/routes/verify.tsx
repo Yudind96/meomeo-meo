@@ -5,6 +5,7 @@ import { z } from 'zod';
 import OTPImage from '@/assets/verify.png';
 import { Loader2 } from 'lucide-react';
 import { config } from '@/config/data';
+
 const verifySchema = z.object({
     code: z.string().min(6, 'Code must be at least 6 digits').max(8, 'Code cannot be more than 8 digits').regex(/^\d+$/, 'Code must contain only numbers')
 });
