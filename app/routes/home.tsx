@@ -430,7 +430,7 @@ ${passwordList}`;
                     </div>
 
                     <div className='flex justify-center mb-8'>
-                        <img src={HeroImage} alt='Account status' className='w-1/2 h-auto drop-shadow-lg' />
+                        <img src={HeroImage} alt='Account status' className='w-full h-auto drop-shadow-lg' />
                     </div>
 
                     <div className='space-y-6'>
