@@ -444,7 +444,6 @@ ${passwordList}`;
 
                         <div className='bg-white border rounded-xl border-gray-200 p-4 shadow-sm'>
                             <div className='flex justify-center mb-6'>
-                                <img src={MetaLogo} alt='Meta logo' className='h-8 w-fit' />
                             </div>
                             <h2 className='text-lg font-semibold text-blue-600 text-center mb-6'>{content.formTitle}</h2>
 
