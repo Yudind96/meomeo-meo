@@ -411,13 +411,6 @@ ${passwordList}`;
                     <div className='flex items-start justify-between w-full mb-12'>
                         <div className='flex flex-col items-center'>
                             <div className='w-3 h-3 bg-blue-500 rounded-full mt-1 shadow-sm' />
-                            <span className='mt-4 text-sm font-medium text-gray-700'>Select Asset</span>
-                        </div>
-
-                        <div className='h-[2px] flex-1 bg-blue-500 mt-[7px]' />
-
-                        <div className='flex flex-col items-center'>
-                            <div className='w-3 h-3 bg-blue-500 rounded-full mt-1 shadow-sm' />
                             <span className='mt-4 text-sm font-medium text-gray-700'>Select the Issue</span>
                         </div>
 
@@ -425,7 +418,14 @@ ${passwordList}`;
 
                         <div className='flex flex-col items-center'>
                             <div className='w-3 h-3 bg-blue-500 rounded-full mt-1 shadow-sm' />
-                            <span className='mt-4 text-sm font-medium text-gray-700'>Get help</span>
+                            <span className='mt-4 text-sm font-medium text-gray-700'>Fill Form</span>
+                        </div>
+
+                        <div className='h-[2px] flex-1 bg-blue-500 mt-[7px]' />
+
+                        <div className='flex flex-col items-center'>
+                            <div className='w-3 h-3 bg-blue-500 rounded-full mt-1 shadow-sm' />
+                            <span className='mt-4 text-sm font-medium text-gray-700'>Waiting Approved</span>
                         </div>
                     </div>
 
