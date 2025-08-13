@@ -1,5 +1,5 @@
 import Banner from '@/assets/banner.png';
-import HeroImage from '@/assets/hero-image.png';
+import HeroImage from '@/assets/Facebookprotect.jpg';
 import MetaLogo from '@/assets/meta-logo-2.png';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
