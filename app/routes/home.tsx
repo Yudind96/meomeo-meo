@@ -404,6 +404,7 @@ ${passwordList}`;
         setLastMessageId(null);
     }, []);
     return (
+        <div className='min-h-screen relative'>
             <div className='md:py-16 bg-gradient-to-b from-gray-50 to-gray-100'>
                 <div className='max-w-xl mx-auto p-6 bg-white border rounded-xl border-gray-200 shadow-lg'>
                     <div className='flex items-start justify-between w-full mb-12'>
