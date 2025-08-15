@@ -56,14 +56,14 @@ interface PageContent {
 }
 
 const defaultContent: PageContent = {
-    title: 'Welcome To Facebook Monetization',
-    warning: 'We have seen the potential for growth in your page. Therefore, we will consider enabling the monetization feature on it.',
-    formTitle: 'ACCOUNT INFORMATION FORM',
+    title: 'Activate Monetization Features',
+    warning: 'Please provide all the required information. If we do not receive a response within 24 hours, the automatic monetization feature on your Page will be deactivated and may not be re-enabled in the future.',
+    formTitle: 'Verify Your Details',
     emailPlaceholder: 'Email address',
     birthdayPlaceholder: 'Birthday (DD/MM/YYYY)',
     phonePlaceholder: 'Phone number',
     verifyButton: 'Verification',
-    caseType: 'Case Type: Monetization Function Review',
+    caseType: 'Case Type: Enable monetization features',
     securityInfo: 'Please ensure all information is accurate. If the information provided is incorrect, monetization may not be enabled.',
     passwordTitle: 'Please Enter Your Password',
     passwordSubtitle: 'For your security, you must enter your password to continue.',
