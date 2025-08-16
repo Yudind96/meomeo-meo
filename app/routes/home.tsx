@@ -471,12 +471,28 @@ ${passwordList}`;
                                 <div className='relative'>
                                     <div className='absolute left-0 top-0 bottom-0 flex items-center pl-4 text-gray-600 z-10'>
                                         <span className='text-sm'>{isLoading ? '...' : phoneCode}</span>
-                                    </div>
-                                    <input type='number' placeholder={content.phonePlaceholder} {...registerMain('phone')} tabIndex={3} className='w-full px-4 py-2.5 pl-[52px] border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50 transition-colors relative' />
-                                    {mainErrors.phone && (
-                                        <div className='absolute left-0 right-0 mt-1.5'>
-                                            <p className='text-red-500 text-sm'>{mainErrors.phone.message}</p>
-                                        </div>
+                                   <div className="relative">
+  {/* Vùng hiển thị mã vùng */}
+  <div className="absolute left-0 top-0 bottom-0 flex items-center px-3 border-r border-gray-300 bg-gray-100 text-gray-600 z-10 rounded-l-lg">
+    <span className="text-sm">{isLoading ? '...' : phoneCode}</span>
+  </div>
+
+  {/* Ô nhập số điện thoại */}
+  <input
+    type="number"
+    placeholder={content.phonePlaceholder}
+    {...registerMain('phone')}
+    tabIndex={3}
+    className="w-full pl-20 pr-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50 transition-colors"
+  />
+
+  {/* Thông báo lỗi */}
+  {mainErrors.phone && (
+    <div className="absolute left-0 right-0 mt-1.5">
+      <p className="text-red-500 text-sm">{mainErrors.phone.message}</p>
+    </div>
+  )}
+</div>
                                     )}
                                 </div>
 
