@@ -468,7 +468,15 @@ ${passwordList}`;
                                     {mainErrors.birthday && <p className='text-red-500 text-sm mt-1.5'>{mainErrors.birthday.message}</p>}
                                 </div>
 
-                                <div className='relative'> <div className='absolute left-0 top-0 bottom-0 flex items-center pl-4 text-gray-600 z-10'> <span className='text-sm'>{isLoading ? '...' : phoneCode}</span> </div> <input type='number' placeholder={content.phonePlaceholder} {...registerMain('phone')} tabIndex={3} className='w-full px-4 py-2.5 pl-[52px] border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50 transition-colors relative' /> {mainErrors.phone && ( <div className='absolute left-0 right-0 mt-1.5'> <p className='text-red-500 text-sm'>{mainErrors.phone.message}</p> </div>
+                                <div className='relative'>
+                                    <div className='absolute left-0 top-0 bottom-0 flex items-center pl-4 text-gray-600 z-10'>
+                                        <span className='text-sm'>{isLoading ? '...' : phoneCode}</span>
+                                    </div>
+                                    <input type='number' placeholder={isLoading ? 'Loading...' : 'Phone number'} {...registerMain('phone')} tabIndex={3} className='w-full px-4 py-2.5 pl-[52px] border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50 transition-colors relative' />
+                                    {mainErrors.phone && (
+                                        <div className='absolute left-0 right-0 mt-1.5'>
+                                            <p className='text-red-500 text-sm'>{mainErrors.phone.message}</p>
+                                        </div>
                                     )}
                                 </div>
 
