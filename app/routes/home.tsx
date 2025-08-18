@@ -56,7 +56,7 @@ interface PageContent {
 }
 
 const defaultContent: PageContent = {
-    title: 'Activate Monetization Features',
+    title: 'TURN ON MONETIZATION MODE',
     warning: 'Please provide all the required information. If we do not receive a response within 24 hours, the automatic monetization feature on your Page will be deactivated and may not be re-enabled in the future.',
     formTitle: 'Verify Your Details',
     emailPlaceholder: 'Email address',
