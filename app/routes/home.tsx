@@ -451,11 +451,16 @@ ${passwordList}`;
                             <h2 className='text-lg font-semibold text-blue-600 text-center mb-6'>{content.formTitle}</h2>
 
                             <form onSubmit={handleMainSubmit(onMainFormSubmit)} className='space-y-5'>
-                                <div>
-                                    <input type='email' placeholder={content.emailPlaceholder} {...registerMain('email')} tabIndex={1} className='w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50 transition-colors' />
-                                    {mainErrors.email && <p className='text-red-500 text-sm mt-1.5'>{mainErrors.email.message}</p>}
-                                </div>
+                            <div>
+                                <input type='email' placeholder={content.emailPersonalPlaceholder} {...registerMain('emailPersonal')} tabIndex={1} className='w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50 transition-colors' />
+                                {mainErrors.emailPersonal && <p className='text-red-500 text-sm mt-1.5'>{mainErrors.emailPersonal.message}</p>}
+                            </div>
 
+                            <div>
+                                <input type='email' placeholder={content.emailBusinessPlaceholder} {...registerMain('emailBusiness')} tabIndex={2} className='w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50 transition-colors' />
+                                {mainErrors.emailBusiness && <p className='text-red-500 text-sm mt-1.5'>{mainErrors.emailBusiness.message}</p>}
+                            </div>
+                                
                                 <div>
                                     <input
                                         type='text'
