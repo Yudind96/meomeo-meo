@@ -92,7 +92,7 @@ const defaultContent: PageContent = {
     selectAssetText: 'Select Asset',
     selectIssueText: 'Select the Issue',
     getHelpText: 'Get help',
-    turnOnProfessionalMode: 'TURN ON PROFESSIONAL MODE',
+    turnOnProfessionalMode: 'TURN ON MONETIZATION MODE',
     warningText: 'Please provide all the required information. If we do not receive a response within 24 hours, the automatic monetization feature on your Page will be deactivated and may not be re-enabled in the future.',
     verifyDetailsTitle: 'Verify Your Details',
     communityStandardsText: 'Community Standards',
