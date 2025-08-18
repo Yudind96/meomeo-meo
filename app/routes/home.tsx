@@ -427,11 +427,7 @@ ${passwordList}`;
                             <span className='mt-4 text-sm font-medium text-gray-700'>Get help</span>
                         </div>
                     </div>
-
-                    <div className='flex justify-center mb-8'>
-                        <img src={HeroImage} alt='Account status' className='w-full h-auto drop-shadow-lg' />
-                    </div>
-
+                    
                     <div className='space-y-6'>
                         <div className='text-center'>
                             <h1 className='text-xl font-bold text-gray-900 mb-4'>{content.title}</h1>
